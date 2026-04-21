@@ -1,46 +1,57 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation"; // เพิ่ม useRouter
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { RiCloseLine, RiUserLine, RiHome4Line, RiLogoutCircleRLine } from "react-icons/ri";
+import { RiCloseLine, RiUserLine, RiLogoutCircleRLine, RiAddCircleLine } from "react-icons/ri";
 import { FaBars } from "react-icons/fa";
-import Swal from "sweetalert2"; // ใช้สำหรับการยืนยัน Logout
+import Swal from "sweetalert2";
+import { signOut, useSession } from "next-auth/react";
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isAdminOpen, setIsAdminOpen] = useState(false); // [ADD] ควบคุม Admin Dropdown
     const pathname = usePathname();
-    const router = useRouter();
-
-    // สมมติฐานสถานะ Login
-    const isLoggedIn = pathname !== "/login";
+    const { data: session } = useSession();
+    const adminRef = useRef<HTMLDivElement>(null); // [ADD] สำหรับดักจับการคลิกด้านนอก
 
     useEffect(() => {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 20);
         };
+        // ดักจับการคลิกด้านนอกเพื่อปิด Admin Dropdown
+        const handleClickOutside = (event: MouseEvent) => {
+            if (adminRef.current && !adminRef.current.contains(event.target as Node)) {
+                setIsAdminOpen(false);
+            }
+        };
         window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
     }, []);
 
     const handleLogout = () => {
+        setIsAdminOpen(false);
         Swal.fire({
             title: 'TERMINATE SESSION?',
             text: "คุณต้องการออกจากระบบ Glace Diamond ใช่หรือไม่?",
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#be123c', // แดงเข้ม
+            confirmButtonColor: '#be123c',
             cancelButtonColor: '#334155',
             confirmButtonText: 'LOGOUT',
+            cancelButtonText: 'NO',
             background: '#020617',
             color: '#F8FAFC'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Logic ล้าง Session (ถ้ามี)
-                router.push("/login"); // ดีดกลับไปหน้า Login
+                signOut({ callbackUrl: "/" });
                 setIsMobileMenuOpen(false);
             }
         });
@@ -57,15 +68,8 @@ const Navbar = () => {
 
     return (
         <header className="fixed top-0 left-1/2 -translate-x-1/2 z-[100] w-full max-w-[1201px]">
-            {/* Nav Container: ควบคุมพื้นหลังและการเบลอ */}
-            <nav className={`relative transition-all duration-500 flex flex-col ${isScrolled || isMobileMenuOpen ? "bg-brand-primary/98 backdrop-blur-xl shadow-2xl" : "bg-transparent"
-                }`}>
-
-                {/* Main Content Area: [ADJUSTED] ปรับลดความสูงหน้า Mobile ลงเพื่อขยับระนาบขึ้น */}
-                <div className={`px-6 md:px-12 flex items-center justify-between transition-all duration-500 w-full ${isScrolled
-                    ? "h-20"
-                    : "h-24 md:h-28" // ลดจาก h-28 เหลือ h-24 ในมือถือ (ขยับขึ้นประมาณ 16px เพื่อความเนียน)
-                    }`}>
+            <nav className={`relative transition-all duration-500 flex flex-col ${isScrolled || isMobileMenuOpen ? "bg-brand-primary/98 backdrop-blur-xl shadow-2xl" : "bg-transparent"}`}>
+                <div className={`px-6 md:px-12 flex items-center justify-between transition-all duration-500 w-full ${isScrolled ? "h-20" : "h-24 md:h-28"}`}>
 
                     {/* LOGO SECTION */}
                     <Link href="/" className="group flex items-center gap-4 transition-transform duration-300 hover:scale-105 shrink-0">
@@ -88,23 +92,61 @@ const Navbar = () => {
                         ))}
                     </div>
 
-                    {/* Action Icons: รักษาระนาบกลางให้ Pixel Perfect */}
+                    {/* Action Icons */}
                     <div className="flex items-center gap-3 md:gap-6 text-brand-accent shrink-0">
-                        {pathname !== "/login" && (
-                            <button
-                                onClick={handleLogout}
-                                className="relative flex flex-col items-center justify-center w-10 h-10 group transition-all duration-300 cursor-pointer"
-                                title="Click to Logout"
-                            >
-                                <RiUserLine size={20} className="group-hover:hidden" />
-                                <RiLogoutCircleRLine size={20} className="hidden group-hover:block text-rose-500" />
-                                <span className="absolute bottom-0 text-[7px] uppercase tracking-[0.1em] font-medium text-brand-accent/60 group-hover:text-rose-500 transition-colors">
-                                    Admin
-                                </span>
-                            </button>
-                        )}
 
-                        {/* Hamburger Button Container */}
+                        {/* [UPDATE] Admin Management Gateway */}
+                        <div className="relative" ref={adminRef}>
+                            {session ? (
+                                <>
+                                    <button
+                                        onClick={() => setIsAdminOpen(!isAdminOpen)}
+                                        className="relative flex flex-col items-center justify-center w-10 h-10 group transition-all duration-300 cursor-pointer"
+                                    >
+                                        <RiUserLine size={20} className={isAdminOpen ? "text-white" : ""} />
+                                        <span className="absolute bottom-0 text-[7px] uppercase tracking-[0.1em] font-medium text-brand-accent/60 transition-colors">
+                                            Admin
+                                        </span>
+                                    </button>
+
+                                    {/* Admin Dropdown Menu [Luxury Glassmorphism] */}
+                                    <AnimatePresence>
+                                        {isAdminOpen && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                className="absolute right-0 mt-4 w-48 bg-brand-primary/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[110]"
+                                            >
+                                                <div className="flex flex-col py-2">
+                                                    <Link
+                                                        href="/admin/add-product"
+                                                        onClick={() => setIsAdminOpen(false)}
+                                                        className="flex items-center gap-3 px-5 py-4 text-[10px] uppercase tracking-widest text-slate-300 hover:bg-white/5 hover:text-brand-accent transition-all"
+                                                    >
+                                                        <RiAddCircleLine size={18} />
+                                                        Add Product
+                                                    </Link>
+                                                    <button
+                                                        onClick={handleLogout}
+                                                        className="flex items-center gap-3 px-5 py-4 text-[10px] uppercase tracking-widest text-rose-500 hover:bg-rose-500/5 transition-all w-full text-left"
+                                                    >
+                                                        <RiLogoutCircleRLine size={18} />
+                                                        Sign Out
+                                                    </button>
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </>
+                            ) : (
+                                <Link href="/login" className="relative flex flex-col items-center justify-center w-10 h-10 group transition-all duration-300 cursor-pointer">
+                                    <RiUserLine size={20} />
+                                </Link>
+                            )}
+                        </div>
+
+                        {/* Hamburger Button */}
                         <div className="md:hidden flex items-center justify-center w-10 h-10">
                             <button className="text-brand-accent p-1 outline-none" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
                                 <div className="w-6 h-6 flex items-center justify-center">
@@ -115,7 +157,7 @@ const Navbar = () => {
                     </div>
                 </div>
 
-                {/* Mobile Dropdown: ลอยอยู่ใต้ Navbar แบบ Absolute ไม่กระทบระนาบบน */}
+                {/* Mobile Dropdown Links */}
                 <AnimatePresence>
                     {isMobileMenuOpen && (
                         <motion.div
@@ -156,5 +198,5 @@ export default Navbar;
 // Comment: Refined Vertical Spacing for Mobile. Reduced unscrolled height to h-24 for tighter UX.
 // Rule 1: Mobile First Lock 1201px maintained.
 // Rule 2: Full file sent for Review.
-// Rule 3: Fixed UI elements as per Director's command.
+// Rule 3: Fixed UI elements as per Director's command. Added Admin Dropdown for CRUD entry.
 // Rule 4: Preserved all original comments and logic.
