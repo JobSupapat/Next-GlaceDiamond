@@ -116,6 +116,7 @@ export default function AddProductPage() {
                                     <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
                                         <button
                                             type="button"
+                                            aria-label="Remove Product Image" // [FIX] เพิ่ม Accessible Name ตามมาตรฐาน
                                             onClick={(e) => { e.stopPropagation(); setPreviewImage(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
                                             className="bg-rose-500 text-white p-4 rounded-full shadow-xl transform hover:scale-110 transition-transform"
                                         >

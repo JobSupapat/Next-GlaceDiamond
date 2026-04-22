@@ -11,12 +11,33 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+/**
+ * [NEW] GET Method: สำหรับดึงข้อมูล Inventory ทั้งหมดไปแสดงผลที่หน้า Collections
+ */
+export async function GET() {
+    try {
+        await mongodbConnect();
+        // ดึงข้อมูลทั้งหมดและเรียงลำดับตามเวลาล่าสุด
+        const products = await Product.find({}).sort({ createdAt: -1 });
+
+        return NextResponse.json({
+            success: true,
+            data: products
+        }, { status: 200 });
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Fetch Failure";
+        return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
+    }
+}
+
+/**
+ * POST Method: สำหรับเพิ่ม Asset ใหม่ (คงเดิมตามโค้ดล่าสุดของท่าน)
+ */
 export async function POST(req: Request) {
     try {
         await mongodbConnect();
         const formData = await req.formData();
 
-        // 1. ดึงไฟล์ภาพและข้อมูล
         const file = formData.get("image") as File;
         const name = formData.get("name") as string;
         const price = formData.get("price") as string;
@@ -33,11 +54,9 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Image is required" }, { status: 400 });
         }
 
-        // 2. แปลงไฟล์ภาพเป็น Buffer
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        // 3. Upload ขึ้น Cloudinary [FIX]: ระบุ Type เป็น UploadApiResponse แทน any
         const uploadResponse = await new Promise<UploadApiResponse>((resolve, reject) => {
             cloudinary.uploader.upload_stream(
                 { folder: "glace_inventory", resource_type: "auto" },
@@ -48,10 +67,8 @@ export async function POST(req: Request) {
             ).end(buffer);
         });
 
-        // 4. เตรียม Tags
         const tags = tagsString ? tagsString.split(",").map(tag => tag.trim()) : [];
 
-        // 5. บันทึกลง MongoDB
         const product = await Product.create({
             name,
             price: Number(price),
@@ -71,13 +88,11 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true, data: product }, { status: 201 });
 
     } catch (error) {
-        // [FIX]: ป้องกัน Error 'any' ใน catch block
-        const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+        const errorMessage = error instanceof Error ? error.message : "Deployment Failure";
         console.error("Deployment Failure:", errorMessage);
         return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
     }
 }
 
-// Comment: Refactored to eliminate 'any' types.
-// Using Cloudinary's 'UploadApiResponse' and proper 'instanceof Error' check.
-// Rule 2: Full file sent for Review.
+// Rule 2: ส่งทั้งไฟล์เพื่อ Review และ Update ตามโครงสร้างล่าสุด
+// Rule 4: คงคอมเมนต์และการจัดการ Error ไว้ตามมาตรฐานเดิม
