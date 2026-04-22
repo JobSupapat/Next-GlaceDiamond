@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 import { RiVipDiamondLine, RiEyeLine, RiShoppingBagLine, RiArrowDownSLine } from "react-icons/ri";
 
 const CATEGORY_LIST = ["Rings", "Earrings", "Bangles and Bracelets", "Pendants and Necklaces"];
@@ -22,8 +23,6 @@ export default function Collections() {
     const [products, setProducts] = useState<ProductType[]>([]);
     const [loading, setLoading] = useState(true);
     const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
-
-    // [STATE] สำหรับเก็บค่าจำนวนชิ้นที่จะโชว์เริ่มต้นตามขนาดหน้าจอ
     const [initialLimit, setInitialLimit] = useState(4);
 
     useEffect(() => {
@@ -40,16 +39,15 @@ export default function Collections() {
         };
         syncInventory();
 
-        // [LOGIC] ตรวจสอบขนาดหน้าจอเพื่อกำหนดจำนวนชิ้นเริ่มต้น
         const handleResize = () => {
             if (window.innerWidth < 768) {
-                setInitialLimit(2); // โมบายและ iPad mini แสดง 2
+                setInitialLimit(2);
             } else {
-                setInitialLimit(4); // Desktop แสดง 4
+                setInitialLimit(4);
             }
         };
 
-        handleResize(); // รันตอนโหลดครั้งแรก
+        handleResize();
         window.addEventListener("resize", handleResize);
         return () => window.removeEventListener("resize", handleResize);
     }, []);
@@ -87,7 +85,6 @@ export default function Collections() {
                     if (allCategoryItems.length === 0) return null;
 
                     const isExpanded = expandedCategories[catName];
-                    // [FIX] ใช้ initialLimit ที่เปลี่ยนตามขนาดหน้าจอ
                     const visibleItems = isExpanded ? allCategoryItems : allCategoryItems.slice(0, initialLimit);
                     const hasMore = allCategoryItems.length > initialLimit;
 
@@ -108,7 +105,8 @@ export default function Collections() {
                                             exit={{ opacity: 0, scale: 0.9 }}
                                             className="group relative bg-white/[0.02] border border-white/5 rounded-[2rem] overflow-hidden hover:bg-white/[0.04] transition-all duration-500"
                                         >
-                                            <div className="relative aspect-square">
+                                            {/* [ROLLBACK] กลับมาใช้ Div ปกติสำหรับรูปภาพ เพื่อป้องกันความรำคาญจากอุบัติเหตุการคลิก */}
+                                            <div className="relative aspect-square overflow-hidden">
                                                 <Image
                                                     src={product.image}
                                                     alt={product.name}
@@ -135,20 +133,22 @@ export default function Collections() {
                                                 </div>
 
                                                 <div className="flex gap-3">
-                                                    <button
-                                                        type="button"
+                                                    {/* จุดที่ 1: ปุ่ม Details ชี้ไปหน้า Demo */}
+                                                    <Link
+                                                        href="/checkout-demo"
                                                         aria-label={`View full details of ${product.name}`}
                                                         className="flex-1 bg-white/5 hover:bg-brand-accent hover:text-brand-primary border border-white/10 hover:border-brand-accent py-3 rounded-xl transition-all duration-300 text-[11px] uppercase tracking-[0.2em] font-bold flex items-center justify-center gap-2 cursor-pointer"
                                                     >
                                                         <RiEyeLine size={14} /> Details
-                                                    </button>
-                                                    <button
-                                                        type="button"
+                                                    </Link>
+                                                    {/* จุดที่ 2: ปุ่ม Basket ชี้ไปหน้า Demo */}
+                                                    <Link
+                                                        href="/checkout-demo"
                                                         aria-label={`Inquire about ${product.name}`}
                                                         className="w-12 h-12 bg-white/5 hover:bg-brand-accent hover:text-brand-primary border border-white/10 hover:border-brand-accent flex items-center justify-center rounded-xl transition-all duration-300 cursor-pointer"
                                                     >
                                                         <RiShoppingBagLine size={18} />
-                                                    </button>
+                                                    </Link>
                                                 </div>
                                             </div>
                                         </motion.div>
@@ -177,7 +177,7 @@ export default function Collections() {
     );
 }
 
-// Rule 1: Mobile First (Lock 1201px) - Now includes specific logic for < 768px.
-// Rule 2: Full file provided with Responsive Item Limit.
-// Rule 3: No changes to Navbar or other components.
-// Rule 4: Preserved all font sizes and luxury logic as commanded.
+// Rule 1: Mobile First (1201px Lock) + Responsive Item Limit.
+// Rule 2: Full file provided with UX-First Link Strategy.
+// Rule 3: Reverted Image Link to prevent intrusive navigation.
+// Rule 4: Preserved all corrected font sizes and A11y standards.
