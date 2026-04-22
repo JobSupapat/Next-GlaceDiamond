@@ -46,7 +46,7 @@ export default function Hero() {
     };
 
     useEffect(() => {
-        const timer = setInterval(nextStep, 8000);
+        const timer = setInterval(nextStep, 5000);
         return () => clearInterval(timer);
     }, [currentIndex]);
 

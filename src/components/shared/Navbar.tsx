@@ -1,3 +1,4 @@
+// src/components/shared/Navbar.tsx
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
@@ -69,21 +70,22 @@ const Navbar = () => {
     return (
         <header className="fixed top-0 left-1/2 -translate-x-1/2 z-[100] w-full max-w-[1201px]">
             <nav className={`relative transition-all duration-500 flex flex-col ${isScrolled || isMobileMenuOpen ? "bg-brand-primary/98 backdrop-blur-xl shadow-2xl" : "bg-transparent"}`}>
-                <div className={`px-6 md:px-12 flex items-center justify-between transition-all duration-500 w-full ${isScrolled ? "h-20" : "h-24 md:h-28"}`}>
+                {/* [ADJUSTED] เปลี่ยน Breakpoint จาก md เป็น lg (1024px) ทั้งไฟล์ */}
+                <div className={`px-6 lg:px-12 flex items-center justify-between transition-all duration-500 w-full ${isScrolled ? "h-20" : "h-24 lg:h-28"}`}>
 
                     {/* LOGO SECTION */}
                     <Link href="/" className="group flex items-center gap-4 transition-transform duration-300 hover:scale-105 shrink-0">
-                        <div className="relative w-10 h-10 md:w-14 md:h-14">
+                        <div className="relative w-10 h-10 lg:w-14 lg:h-14">
                             <Image src="/GlaceJubilee_Logo.svg" alt="Glace Emblem" fill className="object-contain" priority />
                         </div>
-                        <div className="hidden md:flex items-baseline gap-2 text-brand-accent">
+                        <div className="hidden lg:flex items-baseline gap-2 text-brand-accent">
                             <span className="text-2xl font-normal tracking-[0.2em] uppercase">Glace</span>
                             <span className="text-[10px] tracking-[0.8em] font-light uppercase opacity-80">Diamond</span>
                         </div>
                     </Link>
 
-                    {/* Desktop Menu */}
-                    <div className="hidden md:flex items-center gap-10">
+                    {/* Desktop Menu: [ADJUSTED] Show only on lg (>=1024px) */}
+                    <div className="hidden lg:flex items-center gap-10">
                         {navLinks.map((link) => (
                             <Link key={link.name} href={link.href} className={`relative group text-[13px] uppercase tracking-[0.2em] transition-all duration-300 font-light py-2 ${isActive(link.href) ? "text-brand-accent" : "text-slate-300 hover:text-brand-accent"}`}>
                                 {link.name}
@@ -93,7 +95,7 @@ const Navbar = () => {
                     </div>
 
                     {/* Action Icons */}
-                    <div className="flex items-center gap-3 md:gap-6 text-brand-accent shrink-0">
+                    <div className="flex items-center gap-3 lg:gap-6 text-brand-accent shrink-0">
 
                         {/* [UPDATE] Admin Management Gateway */}
                         <div className="relative" ref={adminRef}>
@@ -119,8 +121,9 @@ const Navbar = () => {
                                                 className="absolute right-0 mt-4 w-48 bg-brand-primary/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[110]"
                                             >
                                                 <div className="flex flex-col py-2">
+                                                    {/* [FIX] เปลี่ยน Path จาก /admin/add-product เป็น /add-product ตามโครงสร้าง (admin) route group */}
                                                     <Link
-                                                        href="/admin/add-product"
+                                                        href="/add-product"
                                                         onClick={() => setIsAdminOpen(false)}
                                                         className="flex items-center gap-3 px-5 py-4 text-[10px] uppercase tracking-widest text-slate-300 hover:bg-white/5 hover:text-brand-accent transition-all"
                                                     >
@@ -146,8 +149,8 @@ const Navbar = () => {
                             )}
                         </div>
 
-                        {/* Hamburger Button */}
-                        <div className="md:hidden flex items-center justify-center w-10 h-10">
+                        {/* Hamburger Button: [ADJUSTED] Show on all screens below lg (<1024px) */}
+                        <div className="lg:hidden flex items-center justify-center w-10 h-10">
                             <button className="text-brand-accent p-1 outline-none" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
                                 <div className="w-6 h-6 flex items-center justify-center">
                                     {isMobileMenuOpen ? <RiCloseLine size={28} /> : <FaBars size={22} />}
@@ -157,7 +160,7 @@ const Navbar = () => {
                     </div>
                 </div>
 
-                {/* Mobile Dropdown Links */}
+                {/* Mobile Dropdown Links: [ADJUSTED] Visible on < lg */}
                 <AnimatePresence>
                     {isMobileMenuOpen && (
                         <motion.div
@@ -165,7 +168,7 @@ const Navbar = () => {
                             animate={{ opacity: 1, height: "auto" }}
                             exit={{ opacity: 0, height: 0 }}
                             transition={{ duration: 0.3, ease: "easeInOut" }}
-                            className="absolute top-full left-0 w-full md:hidden overflow-hidden bg-brand-primary/98 backdrop-blur-2xl border-t border-white/5"
+                            className="absolute top-full left-0 w-full lg:hidden overflow-hidden bg-brand-primary/98 backdrop-blur-2xl border-t border-white/5"
                         >
                             <div className="flex flex-col py-8 px-10 gap-7 items-start">
                                 {navLinks.map((link, index) => (
