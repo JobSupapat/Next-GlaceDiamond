@@ -15,11 +15,12 @@ export default function Hero() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [direction, setDirection] = useState(0);
 
+    // [OPTIMIZED] เปลี่ยนจาก Spring เป็น Ease และลดระยะ X เพื่อลดภาระการประมวลผล
     const slideVariants = {
         enter: (direction: number) => ({
-            x: direction > 0 ? 50 : -50,
+            x: direction > 0 ? 20 : -20, // ลดระยะวิ่งจาก 50 เป็น 20
             opacity: 0,
-            scale: 1.05,
+            scale: 1.02, // ลดการขยายจาก 1.05 เป็น 1.02
         }),
         center: {
             zIndex: 1,
@@ -29,9 +30,9 @@ export default function Hero() {
         },
         exit: (direction: number) => ({
             zIndex: 0,
-            x: direction < 0 ? 50 : -50,
+            x: direction < 0 ? 20 : -20,
             opacity: 0,
-            scale: 0.98,
+            scale: 0.99,
         }),
     };
 
@@ -46,13 +47,13 @@ export default function Hero() {
     };
 
     useEffect(() => {
-        const timer = setInterval(nextStep, 5000);
+        const timer = setInterval(nextStep, 6000); // เพิ่มเวลาสไลด์เป็น 6 วินาที ลดความถี่การ Render
         return () => clearInterval(timer);
     }, [currentIndex]);
 
     return (
         <section className="relative min-h-[70vh] lg:h-[85vh] flex flex-col items-center justify-center overflow-hidden border-b border-brand-accent/10 pt-24 pb-12 lg:pb-0 bg-brand-primary">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.04)_0%,transparent_70%)] z-0" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.03)_0%,transparent_70%)] z-0" />
 
             <div className="lg:hidden flex flex-col items-center mb-4 z-10">
                 <h2 className="text-xl font-normal tracking-[0.3em] text-brand-accent uppercase">Glace</h2>
@@ -70,21 +71,21 @@ export default function Hero() {
                             animate="center"
                             exit="exit"
                             transition={{
-                                x: { type: "spring", stiffness: 40, damping: 20 },
-                                opacity: { duration: 0.8 },
-                                scale: { duration: 1.1 }
+                                x: { type: "tween", ease: "easeOut", duration: 0.5 }, // เปลี่ยนจาก spring เป็น tween
+                                opacity: { duration: 0.4 }, // สั้นลงเพื่อให้ UI ตอบสนองไวขึ้น
+                                scale: { duration: 0.6 }
                             }}
                             className="absolute inset-0 flex items-center justify-center"
                         >
-                            {/* [OPTIMIZED] ปรับปรุง LCP ตามคำแนะนำของระบบ Browser */}
                             <Image
                                 src={images[currentIndex]}
                                 alt={`Glace Masterpiece ${currentIndex + 1}`}
                                 fill
-                                priority={true} // บังคับ Priority ให้กับทุกลูกที่อยู่ใน Above the fold
-                                loading="eager" // [FIX] ป้องกัน Lazy Load สำหรับรูปที่เป็น Key Visual ของ LCP
+                                priority={true}
+                                loading="eager"
                                 fetchPriority="high"
-                                className="object-contain drop-shadow-[0_30px_60px_rgba(0,0,0,0.45)]"
+                                // [OPTIMIZED] ลดขนาด Drop Shadow ลงเพื่อประสิทธิภาพ GPU ในมือถือ
+                                className="object-contain drop-shadow-[0_15px_30px_rgba(0,0,0,0.3)]"
                                 sizes="(max-width: 768px) 100vw, 650px"
                             />
                         </motion.div>
@@ -107,12 +108,12 @@ export default function Hero() {
                                 setDirection(index > currentIndex ? 1 : -1);
                                 setCurrentIndex(index);
                             }}
-                            className={`h-[2px] transition-all duration-700 cursor-pointer ${index === currentIndex ? "w-8 md:w-12 bg-brand-accent" : "w-4 md:w-6 bg-brand-accent/20"}`}
+                            className={`h-[2px] transition-all duration-300 cursor-pointer ${index === currentIndex ? "w-8 md:w-12 bg-brand-accent" : "w-4 md:w-6 bg-brand-accent/15"}`}
                         />
                     ))}
                 </div>
             </div>
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1px] h-10 md:h-20 bg-gradient-to-b from-brand-accent/30 to-transparent opacity-50" />
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1px] h-10 md:h-20 bg-gradient-to-b from-brand-accent/20 to-transparent opacity-40" />
         </section>
     );
 }
