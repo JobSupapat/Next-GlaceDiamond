@@ -48,6 +48,13 @@ export default function Collections() {
         setExpandedCategories(prev => ({ ...prev, [catName]: !prev[catName] }));
     };
 
+    // [NEW LOGIC] Helper function สำหรับการบีบอัดภาพผ่าน Cloudinary URL เพื่อเพิ่ม Performance
+    const getOptimizedImage = (url: string) => {
+        if (!url.includes("cloudinary.com")) return url;
+        // แทรกพารามิเตอร์: w_400 (กว้าง 400px), f_auto (เลือกฟอร์แมตที่ประหยัดที่สุดเช่น WebP), q_auto (ปรับคุณภาพอัตโนมัติ)
+        return url.replace("/upload/", "/upload/w_400,f_auto,q_auto/");
+    };
+
     if (loading) return (
         <div className="py-20 text-center text-brand-accent animate-pulse tracking-[0.4em] text-[10px] uppercase">
             Synchronizing Vault...
@@ -88,11 +95,12 @@ export default function Collections() {
                                             className="group relative bg-white/[0.02] border border-white/5 rounded-[2rem] overflow-hidden hover:bg-white/[0.04] transition-all duration-500"
                                         >
                                             <div className="relative aspect-square overflow-hidden bg-black/20">
+                                                {/* [FIXED] ใช้ Optimized URL และปรับ Sizes ให้แม่นยำขึ้นเพื่อลดคะแนน Oversize ใน Mobile */}
                                                 <Image
-                                                    src={product.image}
+                                                    src={getOptimizedImage(product.image)}
                                                     alt={product.name}
                                                     fill
-                                                    sizes="(max-width: 768px) 100vw, 25vw"
+                                                    sizes="(max-width: 768px) 50vw, (max-width: 1201px) 25vw, 300px"
                                                     className="object-cover transition-transform duration-1000 group-hover:scale-110"
                                                 />
                                             </div>

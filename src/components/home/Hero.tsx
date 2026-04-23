@@ -76,23 +76,25 @@ export default function Hero() {
                             }}
                             className="absolute inset-0 flex items-center justify-center"
                         >
+                            {/* [OPTIMIZED] ปรับปรุง LCP ตามคำแนะนำของระบบ Browser */}
                             <Image
                                 src={images[currentIndex]}
                                 alt={`Glace Masterpiece ${currentIndex + 1}`}
                                 fill
-                                priority={currentIndex === 0} // [FIX] เร่งโหลดรูปแรกทันที
-                                fetchPriority={currentIndex === 0 ? "high" : "low"} // [FIX] บอกเบราว์เซอร์ว่ารูปนี้สำคัญที่สุด
+                                priority={true} // บังคับ Priority ให้กับทุกลูกที่อยู่ใน Above the fold
+                                loading="eager" // [FIX] ป้องกัน Lazy Load สำหรับรูปที่เป็น Key Visual ของ LCP
+                                fetchPriority="high"
                                 className="object-contain drop-shadow-[0_30px_60px_rgba(0,0,0,0.45)]"
-                                sizes="(max-width: 768px) 100vw, 650px" // [FIX] ปรับขนาดให้แม่นยำขึ้น
+                                sizes="(max-width: 768px) 100vw, 650px"
                             />
                         </motion.div>
                     </AnimatePresence>
                 </div>
 
-                <button onClick={prevStep} aria-label="Previous Slide" className="absolute left-2 md:left-10 top-1/2 -translate-y-1/2 z-20 p-2 text-brand-accent/30 hover:text-brand-accent transition-all">
+                <button onClick={prevStep} aria-label="Previous Slide" className="absolute left-2 md:left-10 top-1/2 -translate-y-1/2 z-20 p-2 text-brand-accent/30 hover:text-brand-accent transition-all cursor-pointer">
                     <RiArrowLeftSLine className="text-3xl md:text-5xl" />
                 </button>
-                <button onClick={nextStep} aria-label="Next Slide" className="absolute right-2 md:right-10 top-1/2 -translate-y-1/2 z-20 p-2 text-brand-accent/30 hover:text-brand-accent transition-all">
+                <button onClick={nextStep} aria-label="Next Slide" className="absolute right-2 md:right-10 top-1/2 -translate-y-1/2 z-20 p-2 text-brand-accent/30 hover:text-brand-accent transition-all cursor-pointer">
                     <RiArrowRightSLine className="text-3xl md:text-5xl" />
                 </button>
 
@@ -105,7 +107,7 @@ export default function Hero() {
                                 setDirection(index > currentIndex ? 1 : -1);
                                 setCurrentIndex(index);
                             }}
-                            className={`h-[2px] transition-all duration-700 ${index === currentIndex ? "w-8 md:w-12 bg-brand-accent" : "w-4 md:w-6 bg-brand-accent/20"}`}
+                            className={`h-[2px] transition-all duration-700 cursor-pointer ${index === currentIndex ? "w-8 md:w-12 bg-brand-accent" : "w-4 md:w-6 bg-brand-accent/20"}`}
                         />
                     ))}
                 </div>
