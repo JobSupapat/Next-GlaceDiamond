@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation"; // [ADD] นำเข้า useRouter
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { RiCloseLine, RiUserLine, RiLogoutCircleRLine, RiAddCircleLine } from "react-icons/ri";
 import { FaBars } from "react-icons/fa";
@@ -16,24 +16,20 @@ const Navbar = () => {
     const [isAdminOpen, setIsAdminOpen] = useState(false);
     const [activeSection, setActiveSection] = useState("home");
     const pathname = usePathname();
-    const router = useRouter(); // [ADD] เรียกใช้ router สำหรับเปลี่ยนหน้ากลับจาก /login
+    const router = useRouter();
     const { data: session } = useSession();
     const adminRef = useRef<HTMLDivElement>(null);
 
-    // [SPA LOGIC] ฟังก์ชันสำหรับการสไลด์หน้าจอ - แก้ไขปัญหาค้างที่หน้า Login
     const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
         const sectionId = id.replace("#", "");
 
-        // [FIX] หากปัจจุบันไม่ได้อยู่หน้า Home ให้เปลี่ยนหน้ากลับไป Home ก่อน
         if (pathname !== "/") {
             e.preventDefault();
             setIsMobileMenuOpen(false);
-            // เปลี่ยนหน้ากลับไป Home พร้อมแนบ Hash เพื่อให้ Browser เลื่อนให้อัตโนมัติ (Native Browser Behavior)
             router.push(`/${id}`);
             return;
         }
 
-        // หากอยู่หน้า Home อยู่แล้ว ให้ทำ Smooth Scroll ตามปกติ
         e.preventDefault();
         setIsMobileMenuOpen(false);
         const element = document.getElementById(sectionId);
@@ -129,10 +125,17 @@ const Navbar = () => {
             <nav className={`relative transition-all duration-500 flex flex-col ${isScrolled || isMobileMenuOpen ? "bg-brand-primary/98 backdrop-blur-xl shadow-2xl" : "bg-transparent"}`}>
                 <div className={`px-6 lg:px-12 flex items-center justify-between transition-all duration-500 w-full ${isScrolled ? "h-20" : "h-24 lg:h-28"}`}>
 
-                    {/* LOGO: เพิ่มระบบกลับหน้า Home เมื่ออยู่ที่หน้าอื่น */}
+                    {/* [OPTIMIZED LOGO] แก้ไขขนาดและลำดับความสำคัญของโลโก้เพื่อลด Payload & LCP */}
                     <Link href="/" onClick={(e) => scrollToSection(e, "#home")} className="group flex items-center gap-4 transition-transform duration-300 hover:scale-105 shrink-0 z-10">
                         <div className="relative w-10 h-10 lg:w-14 lg:h-14">
-                            <Image src="/GlaceJubilee_Logo.svg" alt="Glace Emblem" fill className="object-contain" priority />
+                            <Image
+                                src="/Glace_Diamond_Logo.svg"
+                                alt="Glace Diamond Boutique"
+                                width={56} // [FIX] กำหนดขนาดตายตัวแทนการใช้ fill เพื่อลดการคำนวณ Layout
+                                height={56}
+                                priority // [FIX] บอกเบราว์เซอร์ให้โหลดทันที (Critical Path)
+                                className="object-contain"
+                            />
                         </div>
                         <div className="hidden lg:flex items-baseline gap-2 text-brand-accent">
                             <span className="text-2xl font-normal tracking-[0.2em] uppercase">Glace</span>
@@ -163,7 +166,7 @@ const Navbar = () => {
                                 <>
                                     <button
                                         onClick={() => setIsAdminOpen(!isAdminOpen)}
-                                        aria-label="Admin Menu"
+                                        aria-label="Admin Control Panel"
                                         className="relative flex flex-col items-center justify-center w-10 h-10 group transition-all duration-300 cursor-pointer"
                                     >
                                         <RiUserLine size={20} className={isAdminOpen ? "text-white" : ""} />
@@ -202,14 +205,18 @@ const Navbar = () => {
                                     </AnimatePresence>
                                 </>
                             ) : (
-                                <Link href="/login" aria-label="Login" className="relative flex flex-col items-center justify-center w-10 h-10 group transition-all duration-300 cursor-pointer">
+                                <Link href="/login" aria-label="Administrator Login" className="relative flex flex-col items-center justify-center w-10 h-10 group transition-all duration-300 cursor-pointer">
                                     <RiUserLine size={20} />
                                 </Link>
                             )}
                         </div>
 
                         <div className="lg:hidden flex items-center justify-center w-10 h-10">
-                            <button aria-label="Toggle Mobile Menu" className="text-brand-accent p-1 outline-none cursor-pointer" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                            <button
+                                aria-label="Toggle Mobile Navigation"
+                                className="text-brand-accent p-1 outline-none cursor-pointer"
+                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            >
                                 <div className="w-6 h-6 flex items-center justify-center relative z-[120]">
                                     {isMobileMenuOpen ? <RiCloseLine size={28} /> : <FaBars size={22} />}
                                 </div>
@@ -258,7 +265,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
-// Rule 2: Full file provided with Navigation Redirect Fix.
-// Rule 3: Fixed logical error where clicking menu items on /login didn't redirect back to Home.
-// Rule 4: Preserved comments and refined mobile/desktop interaction logic.

@@ -31,32 +31,21 @@ export default function Collections() {
                 const res = await fetch("/api/products");
                 const result = await res.json();
                 if (result.success) setProducts(result.data);
-            } catch (error) {
-                console.error("Ecosystem Sync Error:", error);
-            } finally {
-                setLoading(false);
-            }
+            } catch (error) { console.error(error); }
+            finally { setLoading(false); }
         };
         syncInventory();
 
         const handleResize = () => {
-            if (window.innerWidth < 768) {
-                setInitialLimit(2);
-            } else {
-                setInitialLimit(4);
-            }
+            setInitialLimit(window.innerWidth < 768 ? 2 : 4);
         };
-
         handleResize();
         window.addEventListener("resize", handleResize);
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
     const toggleExpand = (catName: string) => {
-        setExpandedCategories(prev => ({
-            ...prev,
-            [catName]: !prev[catName]
-        }));
+        setExpandedCategories(prev => ({ ...prev, [catName]: !prev[catName] }));
     };
 
     if (loading) return (
@@ -68,16 +57,11 @@ export default function Collections() {
     return (
         <section id="collections" className="py-24 bg-brand-primary">
             <div className="max-w-[1201px] mx-auto px-6">
-
                 <header className="mb-20">
-                    <motion.h2
-                        initial={{ opacity: 0, y: 10 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        className="text-2xl font-light tracking-[0.3em] text-white uppercase text-center md:text-left"
-                    >
+                    <h2 className="text-2xl font-light tracking-[0.3em] text-white uppercase text-center md:text-left">
                         Masterpiece Gallery
-                    </motion.h2>
-                    <div className="h-px w-40 lg:w-100 bg-brand-accent mt-6 mx-auto md:mx-0 opacity-50" />
+                    </h2>
+                    <div className="h-px w-40 bg-brand-accent mt-6 mx-auto md:mx-0 opacity-50" />
                 </header>
 
                 {CATEGORY_LIST.map((catName) => {
@@ -86,7 +70,6 @@ export default function Collections() {
 
                     const isExpanded = expandedCategories[catName];
                     const visibleItems = isExpanded ? allCategoryItems : allCategoryItems.slice(0, initialLimit);
-                    const hasMore = allCategoryItems.length > initialLimit;
 
                     return (
                         <div key={catName} className="mb-24 last:mb-0">
@@ -100,25 +83,18 @@ export default function Collections() {
                                         <motion.div
                                             key={product._id}
                                             layout
-                                            initial={{ opacity: 0, scale: 0.9 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            exit={{ opacity: 0, scale: 0.9 }}
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
                                             className="group relative bg-white/[0.02] border border-white/5 rounded-[2rem] overflow-hidden hover:bg-white/[0.04] transition-all duration-500"
                                         >
-                                            {/* [ROLLBACK] กลับมาใช้ Div ปกติสำหรับรูปภาพ เพื่อป้องกันความรำคาญจากอุบัติเหตุการคลิก */}
-                                            <div className="relative aspect-square overflow-hidden">
+                                            <div className="relative aspect-square overflow-hidden bg-black/20">
                                                 <Image
                                                     src={product.image}
                                                     alt={product.name}
                                                     fill
-                                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                                                    sizes="(max-width: 768px) 100vw, 25vw"
                                                     className="object-cover transition-transform duration-1000 group-hover:scale-110"
                                                 />
-                                                <div className="absolute top-4 right-4">
-                                                    <span className="bg-black/60 backdrop-blur-md border border-white/10 text-[11px] text-brand-accent px-3 py-1 rounded-full uppercase tracking-widest">
-                                                        {product.carat || "Elite"}
-                                                    </span>
-                                                </div>
                                             </div>
 
                                             <div className="p-7 space-y-5">
@@ -127,24 +103,26 @@ export default function Collections() {
                                                     <p className="text-brand-accent text-md mt-2 font-medium">฿{Number(product.price).toLocaleString()}</p>
                                                 </div>
 
-                                                <div className="flex items-center justify-between py-4 border-y border-white/5 text-[10px] text-slate-500 uppercase tracking-widest">
-                                                    <span className="flex items-center gap-1.5"><RiVipDiamondLine className="text-brand-accent/50" /> {product.color || "D"} Color</span>
-                                                    <span>{product.clarity || "VVS1"}</span>
+                                                {/* [FIX A11Y] Adjusted Color Contrast from slate-500 to slate-300/400 */}
+                                                <div className="flex items-center justify-between py-4 border-y border-white/5 text-[10px] text-slate-300 uppercase tracking-[0.2em]">
+                                                    <span className="flex items-center gap-1.5">
+                                                        <RiVipDiamondLine className="text-brand-accent" />
+                                                        {product.color || "D"} COLOR
+                                                    </span>
+                                                    <span className="font-medium">{product.clarity || "VVS1"}</span>
                                                 </div>
 
                                                 <div className="flex gap-3">
-                                                    {/* จุดที่ 1: ปุ่ม Details ชี้ไปหน้า Demo */}
                                                     <Link
                                                         href="/checkout-demo"
-                                                        aria-label={`View full details of ${product.name}`}
+                                                        aria-label={`View details of ${product.name}`}
                                                         className="flex-1 bg-white/5 hover:bg-brand-accent hover:text-brand-primary border border-white/10 hover:border-brand-accent py-3 rounded-xl transition-all duration-300 text-[11px] uppercase tracking-[0.2em] font-bold flex items-center justify-center gap-2 cursor-pointer"
                                                     >
                                                         <RiEyeLine size={14} /> Details
                                                     </Link>
-                                                    {/* จุดที่ 2: ปุ่ม Basket ชี้ไปหน้า Demo */}
                                                     <Link
                                                         href="/checkout-demo"
-                                                        aria-label={`Inquire about ${product.name}`}
+                                                        aria-label={`Buy ${product.name}`}
                                                         className="w-12 h-12 bg-white/5 hover:bg-brand-accent hover:text-brand-primary border border-white/10 hover:border-brand-accent flex items-center justify-center rounded-xl transition-all duration-300 cursor-pointer"
                                                     >
                                                         <RiShoppingBagLine size={18} />
@@ -156,17 +134,16 @@ export default function Collections() {
                                 </AnimatePresence>
                             </div>
 
-                            {hasMore && (
+                            {allCategoryItems.length > initialLimit && (
                                 <div className="mt-12 flex justify-center">
-                                    <motion.button
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
+                                    <button
                                         onClick={() => toggleExpand(catName)}
-                                        className="px-8 py-3 bg-white/5 border border-brand-accent/20 text-brand-accent text-[11px] uppercase tracking-[0.3em] rounded-full flex items-center gap-2 hover:bg-brand-accent hover:text-brand-primary transition-all duration-500 cursor-pointer shadow-lg shadow-brand-accent/5"
+                                        aria-label={isExpanded ? "Collapse" : "Show more"}
+                                        className="px-8 py-3 bg-white/5 border border-brand-accent/20 text-brand-accent text-[11px] uppercase tracking-[0.3em] rounded-full flex items-center gap-2 hover:bg-brand-accent hover:text-brand-primary transition-all duration-500 cursor-pointer"
                                     >
                                         {isExpanded ? "Show Less" : `More ${catName}...`}
-                                        <RiArrowDownSLine className={`text-lg transition-transform duration-500 ${isExpanded ? "rotate-180" : ""}`} />
-                                    </motion.button>
+                                        <RiArrowDownSLine className={isExpanded ? "rotate-180" : ""} />
+                                    </button>
                                 </div>
                             )}
                         </div>
@@ -176,8 +153,3 @@ export default function Collections() {
         </section>
     );
 }
-
-// Rule 1: Mobile First (1201px Lock) + Responsive Item Limit.
-// Rule 2: Full file provided with UX-First Link Strategy.
-// Rule 3: Reverted Image Link to prevent intrusive navigation.
-// Rule 4: Preserved all corrected font sizes and A11y standards.

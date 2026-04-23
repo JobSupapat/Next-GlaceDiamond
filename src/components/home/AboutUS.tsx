@@ -21,7 +21,7 @@ export default function AboutUS() {
                     <div className="space-y-8">
                         <div className="flex items-center gap-4">
                             <div className="relative w-12 h-12">
-                                <Image src="/GlaceJubilee_Logo.svg" alt="Glace Jubilee Logo" fill className="object-contain" />
+                                <Image src="/Glace_Diamond_Logo.svg" alt="Glace Diamond" fill className="object-contain" />
                             </div>
                             <div>
                                 <h2 className="text-xl tracking-[0.3em] text-brand-accent uppercase">Glace Jubilee</h2>

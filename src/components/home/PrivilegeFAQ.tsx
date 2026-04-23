@@ -51,12 +51,8 @@ export default function PrivilegeFAQ() {
                 const res = await fetch("/api/products");
                 const result = await res.json();
                 if (result.success && result.data.length > 0) {
-                    // [LOGIC FIX] สุ่มแบบไม่ซ้ำโดยการ Shuffle อาร์เรย์สินค้าต้นทาง
                     const shuffled = [...result.data].sort(() => 0.5 - Math.random());
-
                     setFaqWithImages(prev => prev.map((item, index) => {
-                        // ดึงรูปตามลำดับที่สลับแล้ว (จะไม่มีทางซ้ำกัน)
-                        // ใช้ modulo เพื่อป้องกันกรณีสินค้าใน DB น้อยกว่าจำนวนการ์ด FAQ
                         const imgSource = shuffled[index % shuffled.length];
                         return { ...item, randomImg: imgSource.image };
                     }));
@@ -69,11 +65,7 @@ export default function PrivilegeFAQ() {
         fetchUniqueRandomAssets();
 
         const handleResize = () => {
-            if (window.innerWidth < 768) {
-                setInitialLimit(2);
-            } else {
-                setInitialLimit(4);
-            }
+            setInitialLimit(window.innerWidth < 768 ? 2 : 4);
         };
 
         handleResize();
@@ -99,7 +91,7 @@ export default function PrivilegeFAQ() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
                     <AnimatePresence mode="popLayout">
-                        {visibleItems.map((item, index) => (
+                        {visibleItems.map((item) => (
                             <motion.div
                                 key={item.id}
                                 layout
@@ -109,13 +101,13 @@ export default function PrivilegeFAQ() {
                                 transition={{ duration: 0.4 }}
                                 className="group relative aspect-square bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-8 hover:bg-white/[0.04] transition-all duration-500 flex flex-col justify-between overflow-hidden"
                             >
-                                {/* Unique Asset Thumbnail - 100% Brightness & Sizes Corrected */}
-                                <div className="absolute top-6 right-6 w-20 h-20 z-10">
+                                {/* [FIX CLS] Added min-h for Image Placeholder */}
+                                <div className="absolute top-6 right-6 w-20 h-20 z-10 min-h-[80px] min-w-[80px]">
                                     <div className="relative w-full h-full rounded-full border border-brand-accent/20 overflow-hidden bg-black/40 backdrop-blur-md group-hover:border-brand-accent/50 transition-colors">
                                         {item.randomImg ? (
                                             <Image
                                                 src={item.randomImg}
-                                                alt="Glace Masterpiece"
+                                                alt="Glace Masterpiece Thumbnail"
                                                 fill
                                                 sizes="80px"
                                                 className="object-cover group-hover:scale-110 transition-all duration-700"
@@ -133,18 +125,18 @@ export default function PrivilegeFAQ() {
                                 </div>
 
                                 <div>
-                                    <h3 className="text-white text-[14px] md:text-[14px] font-light leading-relaxed tracking-wide mb-6 pr-10">
+                                    <h3 className="text-white text-[14px] font-light leading-relaxed tracking-wide mb-6 pr-10">
                                         {item.question}
                                     </h3>
+                                    {/* [FIX A11Y] Added Unique Aria Label */}
                                     <Link
                                         href={`/faq/${item.slug}`}
+                                        aria-label={`รายละเอียดหัวข้อ: ${item.question}`}
                                         className="inline-flex items-center gap-2 text-brand-accent text-[12px] uppercase tracking-[0.2em] font-bold group-hover:translate-x-2 transition-transform duration-300"
                                     >
                                         รายละเอียด <RiArrowRightUpLine size={14} />
                                     </Link>
                                 </div>
-
-                                {/* [FIX] Removed decorative corner line to prevent overlap with Image */}
                             </motion.div>
                         ))}
                     </AnimatePresence>
@@ -156,6 +148,7 @@ export default function PrivilegeFAQ() {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => setIsExpanded(true)}
+                            aria-label="View more FAQ items"
                             className="px-8 py-3 bg-white/5 border border-brand-accent/20 text-brand-accent text-[11px] uppercase tracking-[0.3em] rounded-full flex items-center gap-2 hover:bg-brand-accent hover:text-brand-primary transition-all duration-500 cursor-pointer shadow-lg shadow-brand-accent/5"
                         >
                             View More FAQ
@@ -167,8 +160,3 @@ export default function PrivilegeFAQ() {
         </section>
     );
 }
-
-// Rule 1: Mobile First - Single Column Grid (grid-cols-1) + Limit 2.
-// Rule 2: Full file provided with Unique Shuffle Random Logic.
-// Rule 3: Fixed logic to prevent duplicate images across cards.
-// Rule 4: Clean Corner - Removed decorative line overlapping the image.

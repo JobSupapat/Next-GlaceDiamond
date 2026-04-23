@@ -119,7 +119,7 @@ export default function LoginPage() {
                     <div className="flex flex-col items-center mb-10">
                         <div className="relative w-20 h-20 mb-6 group">
                             <div className="absolute inset-0 bg-brand-accent/20 rounded-full blur-xl group-hover:bg-brand-accent/40 transition-all duration-700" />
-                            <Image src="/GlaceJubilee_Logo.svg" alt="Glace Emblem" fill className="object-contain relative z-10" />
+                            <Image src="/Glace_Diamond_Logo.svg" alt="Glace Diamond" fill className="object-contain relative z-10" />
                         </div>
                         <div className="flex flex-col items-center gap-1 text-center">
                             <h1 className="text-2xl font-normal tracking-[0.3em] text-brand-accent uppercase">
